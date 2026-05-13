@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>하츠오브아이언4 모드 완벽 호환</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: "Noto Sans KR", sans-serif; overflow: hidden; color: #e8edf5; }
+
+    /* ── 랜딩 ── */
+    #landing { position: fixed; inset: 0; z-index: 1; display: flex; flex-direction: column; }
+    .bg { position: absolute; inset: 0; background: url("https://i.imgur.com/KgaZTBO.jpg") center/cover no-repeat; }
+    .bg-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.5)); }
+    header { position: relative; z-index: 2; padding: 20px 48px; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.35); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .logo { font-family: "Syne", sans-serif; font-weight: 800; font-size: 1.3rem; letter-spacing: 0.14em; }
+    .logo span { color: #7dd3fc; }
+    .nav-tag { font-size: 0.68rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.6); text-transform: uppercase; border: 1px solid rgba(255,255,255,0.2); padding: 5px 14px; border-radius: 100px; }
+    .landing-body { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; }
+    h1 { font-family: "Syne", sans-serif; font-size: clamp(2.4rem, 6vw, 4.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; color: #fff; text-shadow: 0 2px 32px rgba(0,0,0,0.6); margin-bottom: 16px; }
+    h1 em { font-style: normal; color: #7dd3fc; }
+    .subtitle { font-size: 1rem; color: rgba(255,255,255,0.72); line-height: 1.7; font-weight: 300; max-width: 480px; margin: 0 auto 48px; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
+    .btn-group { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; }
+    .btn { position: relative; display: inline-block; cursor: pointer; border: none; background: none; padding: 0; outline: none; transition: transform 0.18s cubic-bezier(.16,1,.3,1), filter 0.18s; width: 222px; height: 54px; }
+    .btn img.btn-img { display: block; width: 100%; height: 100%; image-rendering: crisp-edges; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6)); }
+    .btn-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.92rem; font-weight: 500; letter-spacing: 0.06em; color: rgba(255,255,255,0.92); text-shadow: 0 1px 4px rgba(0,0,0,0.8); pointer-events: none; }
+    .btn:hover { transform: translateY(-3px) scale(1.03); filter: brightness(1.12); }
+    .btn:active { transform: scale(0.97); }
+    .btn-tooltip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: rgba(255,255,255,0.85); font-size: 0.68rem; white-space: nowrap; padding: 5px 10px; border-radius: 6px; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+    .btn:hover .btn-tooltip { opacity: 1; }
+    footer { position: relative; z-index: 2; padding: 14px 48px; text-align: center; background: rgba(0,0,0,0.3); backdrop-filter: blur(16px); border-top: 1px solid rgba(255,255,255,0.07); font-size: 0.7rem; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; }
+
+    /* ── 모달 ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.65); backdrop-filter: blur(10px); align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: rgba(10,15,25,0.92); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 40px 36px; max-width: 440px; width: 90%; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
+    .modal-icon { font-size: 2.2rem; margin-bottom: 14px; }
+    .modal h2 { font-family: "Syne", sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .modal p { color: rgba(255,255,255,0.55); font-size: 0.88rem; line-height: 1.6; margin-bottom: 26px; }
+    .modal-close { padding: 11px 28px; border-radius: 10px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.12); font-family: "Noto Sans KR", sans-serif; font-size: 0.88rem; cursor: pointer; }
+    .modal-close:hover { background: rgba(255,255,255,0.18); }
+
+    /* ── 탐색기 ── */
+    #explorer { position: fixed; inset: 0; z-index: 10; background: #1c1f26; display: none; flex-direction: column; }
+    #explorer.show { display: flex; }
+    .exp-header { display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: #13151b; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
+    .exp-back { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); font-family: "Noto Sans KR", sans-serif; font-size: 0.82rem; padding: 7px 16px; border-radius: 8px; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+    .exp-back:hover { background: rgba(255,255,255,0.13); }
+    .exp-title { font-family: "Syne", sans-serif; font-size: 1rem; font-weight: 700; color: rgba(255,255,255,0.9); }
+    .exp-root-name { font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+    .exp-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* 트리 */
+    .exp-tree { width: 260px; min-width: 180px; background: #181b22; border-right: 1px solid rgba(255,255,255,0.07); overflow-y: auto; padding: 8px 0; flex-shrink: 0; }
+    .exp-tree::-webkit-scrollbar { width: 4px; }
+    .exp-tree::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .tree-item { display: flex; align-items: center; padding: 6px 12px; cursor: pointer; font-size: 0.82rem; color: rgba(255,255,255,0.7); transition: background 0.12s, color 0.12s; user-select: none; position: relative; }
+    .tree-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .tree-item.active { background: rgba(125,211,252,0.12); color: #7dd3fc; }
+    .tree-item.file-item.active { background: rgba(125,211,252,0.1); color: #7dd3fc; }
+    .tree-indent { display: inline-block; width: 16px; flex-shrink: 0; }
+    .tree-icon { font-size: 0.78rem; margin-right: 6px; flex-shrink: 0; }
+    .tree-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tree-plus { font-size: 1rem; font-weight: 300; color: rgba(255,255,255,0.3); margin-left: 4px; flex-shrink: 0; transition: transform 0.2s, color 0.15s; }
+    .tree-item.open > .tree-plus { transform: rotate(45deg); color: #7dd3fc; }
+    .tree-children { display: none; }
+    .tree-children.open { display: block; }
+
+    /* 호환 안되는 파일 툴팁 */
+    .incompat-tip {
+      display: none; position: fixed; z-index: 999;
+      background: rgba(30,20,20,0.95); border: 1px solid rgba(255,80,80,0.3);
+      color: rgba(255,150,150,0.9); font-size: 0.72rem; padding: 5px 11px;
+      border-radius: 6px; pointer-events: none; white-space: nowrap;
+    }
+
+    /* 오른쪽 메인 */
+    .exp-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #1c1f26; }
+    .exp-empty { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: rgba(255,255,255,0.2); font-size: 0.88rem; }
+    .exp-empty-icon { font-size: 3rem; opacity: 0.25; }
+
+    /* 에디터 탭바 */
+    .editor-tabbar { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #13151b; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; min-height: 42px; }
+    .editor-filename { font-size: 0.82rem; color: rgba(255,255,255,0.6); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .dirty-dot { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; display: none; }
+    .dirty-dot.on { display: inline-block; }
+    .editor-actions { display: flex; gap: 8px; }
+    .editor-btn { padding: 5px 14px; border-radius: 6px; font-family: "Noto Sans KR", sans-serif; font-size: 0.78rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: background 0.15s; }
+    .editor-btn.save { background: rgba(125,211,252,0.15); color: #7dd3fc; }
+    .editor-btn.save:hover { background: rgba(125,211,252,0.28); }
+    .editor-btn.copy { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); }
+    .editor-btn.copy:hover { background: rgba(255,255,255,0.13); }
+    #editor-area { flex: 1; width: 100%; padding: 20px 24px; background: #1c1f26; color: #d4d8e2; font-family: "Consolas","Monaco","Courier New",monospace; font-size: 0.85rem; line-height: 1.7; border: none; outline: none; resize: none; overflow-y: auto; }
+    #editor-area::-webkit-scrollbar { width: 6px; }
+    #editor-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    /* 이미지 뷰어 */
+    #image-wrap { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+    .image-tabbar { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #13151b; border-bottom: 1px solid rgba(255,255,255,0.07); min-height: 42px; flex-shrink: 0; }
+    .image-tabbar-name { font-size: 0.82rem; color: rgba(255,255,255,0.6); }
+    .image-tabbar-info { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+    .image-viewer { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 24px; background: repeating-conic-gradient(#252830 0% 25%, #1c1f26 0% 50%) 0 0 / 20px 20px; }
+    .image-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+    .dds-notice { display: flex; flex-direction: column; align-items: center; gap: 10px; color: rgba(255,255,255,0.35); font-size: 0.85rem; }
+    .dds-notice-icon { font-size: 2.5rem; opacity: 0.4; }
+
+    /* 비호환 안내 */
+    #incompat-wrap { flex: 1; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: rgba(255,100,100,0.5); font-size: 0.85rem; }
+
+    /* 빈 화면 액션 버튼 */
+    .empty-actions { display: flex; gap: 12px; margin-top: 8px; }
+    .empty-action-btn { display: flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 9px; border: 1px dashed rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.35); font-family: "Noto Sans KR", sans-serif; font-size: 0.8rem; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+    .empty-action-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.28); color: rgba(255,255,255,0.7); }
+
+    /* 트리 내 폴더/파일 만들기 행 */
+    .tree-item.new-item { opacity: 0.38; font-style: italic; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 2px; }
+    .tree-item.new-item:hover { opacity: 0.7; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.65); }
+
+    /* 파일/폴더 만들기 모달 */
+    .create-modal { max-width: 540px; }
+    .create-modal-body { display: flex; gap: 16px; margin-bottom: 8px; }
+    .create-field { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .create-label { font-size: 0.74rem; color: rgba(255,255,255,0.4); letter-spacing: 0.05em; text-transform: uppercase; }
+    .create-input { width: 100%; padding: 10px 13px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.13); background: rgba(255,255,255,0.06); color: #fff; font-family: "Noto Sans KR", sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    .create-input:focus { border-color: rgba(125,211,252,0.4); }
+    .ext-list { display: flex; flex-direction: column; gap: 4px; }
+    .ext-item { display: flex; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); cursor: pointer; transition: background 0.12s, border-color 0.12s; font-size: 0.85rem; color: rgba(255,255,255,0.65); user-select: none; }
+    .ext-item:hover { background: rgba(255,255,255,0.09); }
+    .ext-item.selected { background: rgba(125,211,252,0.12); border-color: rgba(125,211,252,0.3); color: #7dd3fc; }
+    .ext-item input[type=radio] { accent-color: #7dd3fc; width: 14px; height: 14px; flex-shrink: 0; pointer-events: none; }
+    .ext-warn { font-size: 0.74rem; color: rgba(255,180,80,0.85); margin-top: 6px; min-height: 18px; }
+    .create-modal-warn { font-size: 0.74rem; color: rgba(255,100,100,0.8); min-height: 18px; margin-bottom: 12px; text-align: left; }
+    .create-modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+    /* 토스트 */
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(30,35,46,0.95); border: 1px solid rgba(125,211,252,0.3); color: #7dd3fc; font-size: 0.82rem; padding: 10px 22px; border-radius: 8px; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 999; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- 랜딩 -->
+<div id="landing">
+  <div class="bg"></div>
+  <div class="bg-overlay"></div>
+  <header>
+    <div class="logo">모딩 <span>가이드</span></div>
+    <span class="nav-tag">Beta</span>
+  </header>
+  <div class="landing-body">
+    <h1>모딩은 하고싶은데 너무 어렵다고요?<br><em>잘 오셨습니다!</em></h1>
+    <p class="subtitle">기존 모드를 불러와 분석하거나 처음부터 새로운 모드를 직접 만들어보세요.</p>
+    <div class="btn-group">
+      <button class="btn" onclick="triggerFileInput()">
+        <span class="btn-tooltip">Documents\Paradox Interactive\Hearts of Iron IV\mod 경로에서 가져와야 합니다</span>
+        <img class="btn-img" src="data:image/png;base64,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" alt="모드 불러오기" />
+        <span class="btn-label">모드 불러오기</span>
+      </button>
+      <button class="btn" onclick="openModal('create')">
+        <img class="btn-img" src="data:image/png;base64,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" alt="모드 만들기" />
+        <span class="btn-label">모드 만들기</span>
+      </button>
+    </div>
+  </div>
+  <footer>© 2025 SOHFJDHS — All rights reserved</footer>
+</div>
+
+<input type="file" id="file-input" webkitdirectory multiple style="display:none" />
+
+<!-- 탐색기 -->
+<div id="explorer">
+  <div class="exp-header">
+    <button class="exp-back" onclick="goBack()">← 돌아가기</button>
+    <div>
+      <div class="exp-title" id="exp-title">mod 폴더</div>
+      <div class="exp-root-name" id="exp-root-name"></div>
+    </div>
+  </div>
+  <div class="exp-body">
+    <div class="exp-tree" id="exp-tree"></div>
+    <div class="exp-main" id="exp-main">
+
+      <!-- 빈 상태 -->
+      <div class="exp-empty" id="exp-empty">
+        <div class="exp-empty-icon">📄</div>
+        <div>왼쪽에서 파일을 선택하세요</div>
+        <div class="empty-actions">
+          <button class="empty-action-btn" onclick="openNewFolderModal('')">
+            <span>📁</span> 폴더 만들기
+          </button>
+          <button class="empty-action-btn" onclick="openNewFileModal('')">
+            <span>📄</span> 파일 만들기
+          </button>
+        </div>
+      </div>
+
+      <!-- 텍스트 에디터 -->
+      <div id="editor-wrap" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
+        <div class="editor-tabbar">
+          <div class="editor-filename">
+            <span class="dirty-dot" id="dirty-dot"></span>
+            <span id="editor-fname">파일명</span>
+          </div>
+          <div class="editor-actions">
+            <button class="editor-btn copy" onclick="copyContent()">복사</button>
+            <button class="editor-btn save" onclick="saveFile()">저장 (다운로드)</button>
+          </div>
+        </div>
+        <textarea id="editor-area" spellcheck="false"></textarea>
+      </div>
+
+      <!-- 이미지 뷰어 -->
+      <div id="image-wrap">
+        <div class="image-tabbar">
+          <span class="image-tabbar-name" id="image-fname"></span>
+          <span class="image-tabbar-info" id="image-info"></span>
+        </div>
+        <div class="image-viewer">
+          <img id="image-preview" src="" alt="" />
+          <div class="dds-notice" id="dds-notice" style="display:none; flex-direction:column; align-items:center; gap:12px;">
+            <canvas id="dds-canvas" style="max-width:100%; max-height:100%; border-radius:4px; box-shadow:0 8px 32px rgba(0,0,0,0.6);"></canvas>
+            <div id="dds-error" style="display:none; flex-direction:column; align-items:center; gap:8px; color:rgba(255,255,255,0.3); font-size:0.85rem;">
+              <div style="font-size:2.5rem">🖼️</div>
+              <div id="dds-error-msg">이 DDS 포맷은 지원되지 않습니다</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 비호환 안내 -->
+      <div id="incompat-wrap">
+        <div style="font-size:2.5rem; opacity:0.3">🚫</div>
+        <div>호환되지 않는 확장자입니다</div>
+        <div id="incompat-fname" style="font-size:0.75rem; color:rgba(255,100,100,0.35); margin-top:4px"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 호버 툴팁 (비호환) -->
+<div class="incompat-tip" id="incompat-tip">호환되지 않는 확장자입니다</div>
+
+<!-- 모드 만들기 모달 -->
+<div class="modal-overlay" id="modal-create" onclick="closeOnOverlay(event,'modal-create')">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-icon">✨</div>
+    <h2>모드 만들기</h2>
+    <p style="margin-bottom:16px;">모드 이름을 입력하세요.<br><span style="font-size:0.78rem;color:rgba(255,255,255,0.3);">영어, 숫자, 하이픈(-)만 사용할 수 있습니다</span></p>
+    <input id="mod-name-input" type="text" placeholder="예: my-history-mod"
+      style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:0.92rem;outline:none;margin-bottom:8px;transition:border-color 0.2s;"
+      oninput="filterModName(this)" onkeydown="if(event.key==='Enter')createMod()" />
+    <div id="mod-name-warn" style="font-size:0.72rem;color:rgba(255,100,100,0.8);min-height:18px;margin-bottom:14px;text-align:left;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="modal-close" onclick="closeModal('modal-create')" style="flex:1;">취소</button>
+      <button class="modal-close" onclick="createMod()" style="flex:1;background:rgba(125,211,252,0.18);color:#7dd3fc;border-color:rgba(125,211,252,0.25);">만들기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 잘못된 폴더 에러 모달 -->
+<div class="modal-overlay" id="modal-error" onclick="closeOnOverlay(event,'modal-error')">
+  <div class="modal">
+    <div class="modal-icon">⚠️</div>
+    <h2>잘못된 파일입니다</h2>
+    <p>선택한 폴더에서 <strong style="color:rgba(255,200,100,0.9);">descriptor.mod</strong> 파일을 찾을 수 없습니다.<br><br>올바른 Hearts of Iron IV 모드 폴더를 선택해주세요.<br><span style="font-size:0.78rem;color:rgba(255,255,255,0.3);">경로: Documents\Paradox Interactive\Hearts of Iron IV\mod</span></p>
+    <button class="modal-close" onclick="closeModal('modal-error')">확인</button>
+  </div>
+</div>
+
+<!-- 폴더 만들기 모달 -->
+<div class="modal-overlay" id="modal-newfolder" onclick="closeOnOverlay(event,'modal-newfolder')">
+  <div class="modal create-modal">
+    <div class="modal-icon">📁</div>
+    <h2>폴더 만들기</h2>
+    <p style="margin-bottom:14px;">폴더 이름을 입력하세요.<br><span style="font-size:0.78rem;color:rgba(255,255,255,0.3);">영어, 숫자, 언더바(_), 하이픈(-)만 사용 가능합니다</span></p>
+    <input id="new-folder-name" class="create-input" type="text" placeholder="예: interface" oninput="filterFolderName(this)" onkeydown="if(event.key==='Enter')confirmNewFolder()" />
+    <div class="create-modal-warn" id="new-folder-warn"></div>
+    <div class="create-modal-actions">
+      <button class="modal-close" onclick="closeModal('modal-newfolder')" style="flex:1;">취소</button>
+      <button class="modal-close" onclick="confirmNewFolder()" style="flex:1;background:rgba(125,211,252,0.18);color:#7dd3fc;border-color:rgba(125,211,252,0.25);">만들기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 파일 만들기 모달 -->
+<div class="modal-overlay" id="modal-newfile" onclick="closeOnOverlay(event,'modal-newfile')">
+  <div class="modal create-modal">
+    <div class="modal-icon">📄</div>
+    <h2>파일 만들기</h2>
+    <p style="margin-bottom:14px;">파일 이름과 형식을 선택하세요.<br><span style="font-size:0.78rem;color:rgba(255,255,255,0.3);">영어와 언더바(_)만 사용 가능합니다</span></p>
+    <div class="create-modal-body">
+      <div class="create-field" style="flex:1.2;">
+        <div class="create-label">파일 이름</div>
+        <input id="new-file-name" class="create-input" type="text" placeholder="예: my_events" oninput="filterFileName(this)" onkeydown="if(event.key==='Enter')confirmNewFile()" />
+      </div>
+      <div class="create-field" style="flex:0.9;">
+        <div class="create-label">형식</div>
+        <div class="ext-list" id="ext-list">
+          <label class="ext-item selected" onclick="selectExt(this,'txt')">
+            <input type="radio" name="ext" value="txt" checked /> .txt
+          </label>
+          <label class="ext-item" onclick="selectExt(this,'gfx')">
+            <input type="radio" name="ext" value="gfx" /> .gfx
+          </label>
+          <label class="ext-item" onclick="selectExt(this,'gui')">
+            <input type="radio" name="ext" value="gui" /> .gui
+          </label>
+        </div>
+        <div class="ext-warn" id="ext-warn"></div>
+      </div>
+    </div>
+    <div class="create-modal-warn" id="new-file-warn"></div>
+    <div class="create-modal-actions">
+      <button class="modal-close" onclick="closeModal('modal-newfile')" style="flex:1;">취소</button>
+      <button class="modal-close" onclick="confirmNewFile()" style="flex:1;background:rgba(125,211,252,0.18);color:#7dd3fc;border-color:rgba(125,211,252,0.25);">만들기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── 확장자 분류 ──
+  const TEXT_EXTS = new Set([
+    'txt','mod','lua','py','js','json','yml','yaml','xml','csv',
+    'cfg','ini','toml','md','log','sh','bat','ps1','java','c','cpp',
+    'h','hpp','cs','html','css','ts','rb','go','rs','sql',
+    'gfx','gui','asset','pdx','focus','idea','tech','culture','event'
+  ]);
+  const IMAGE_EXTS = new Set(['png','jpg','jpeg','gif','webp','bmp','svg']);
+  const TGA_EXTS = new Set(['tga']);
+  // dds는 별도 처리 (브라우저 표시 불가지만 이미지로 분류)
+  const DDS_EXTS = new Set(['dds']);
+
+  const fileMap = {};
+  let currentPath = null;
+  let isDirty = false;
+
+  // ── 유틸 ──
+  function openModal(t) { document.getElementById('modal-'+t).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeOnOverlay(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+  function triggerFileInput() { document.getElementById('file-input').click(); }
+  function goBack() { document.getElementById('explorer').classList.remove('show'); }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    if ((e.ctrlKey || e.metaKey) && e.key === 's' && currentPath) { e.preventDefault(); saveFile(); }
+  });
+
+  // ── 에디터 dirty ──
+  document.getElementById('editor-area').addEventListener('input', () => {
+    isDirty = true;
+    document.getElementById('dirty-dot').classList.add('on');
+  });
+
+  // ── 폴더 불러오기 ──
+  document.getElementById('file-input').addEventListener('change', function() {
+    const files = Array.from(this.files);
+    if (!files.length) return;
+
+    // descriptor.mod 존재 여부 확인 (루트 직속)
+    const rootName = files[0].webkitRelativePath.split('/')[0];
+    const hasDescriptor = files.some(f => {
+      const parts = f.webkitRelativePath.split('/');
+      return parts.length === 2 && parts[1].toLowerCase() === 'descriptor.mod';
+    });
+
+    if (!hasDescriptor) {
+      this.value = '';
+      openModal('error');
+      return;
+    }
+
+    files.forEach(f => { fileMap[f.webkitRelativePath] = f; });
+
+    const tree = {};
+    files.forEach(file => {
+      const parts = file.webkitRelativePath.split('/');
+      let node = tree;
+      parts.forEach((part, i) => {
+        if (i === parts.length - 1) {
+          if (!node.__files__) node.__files__ = [];
+          node.__files__.push({ name: part, path: file.webkitRelativePath });
+        } else {
+          if (!node[part]) node[part] = {};
+          node = node[part];
+        }
+      });
+    });
+
+    document.getElementById('exp-title').textContent = rootName;
+    document.getElementById('exp-root-name').textContent = files.length + '개 항목';
+
+    const treeEl = document.getElementById('exp-tree');
+    treeEl.innerHTML = '';
+    renderTree(tree[rootName] || tree, treeEl, 0);
+    document.getElementById('explorer').classList.add('show');
+    showPanel('empty');
+  });
+
+  // ── 패널 전환 ──
+  function showPanel(type) {
+    document.getElementById('exp-empty').style.display      = type==='empty'   ? 'flex'  : 'none';
+    document.getElementById('editor-wrap').style.display    = type==='editor'  ? 'flex'  : 'none';
+    document.getElementById('image-wrap').style.display     = type==='image'   ? 'flex'  : 'none';
+    document.getElementById('incompat-wrap').style.display  = type==='incompat'? 'flex'  : 'none';
+  }
+
+  // ── 트리 렌더 ──
+  function getFileType(name) {
+    const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+    if (TEXT_EXTS.has(ext) || ext === '') return 'text';
+    if (IMAGE_EXTS.has(ext)) return 'image';
+    if (DDS_EXTS.has(ext)) return 'dds';
+    if (TGA_EXTS.has(ext)) return 'tga';
+    return 'incompat';
+  }
+
+  function getFileIcon(name) {
+    const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+    const map = { txt:'📄',mod:'🔧',lua:'📜',py:'🐍',js:'📜',json:'📋',yml:'📋',yaml:'📋',xml:'📋',csv:'📊',cfg:'⚙️',ini:'⚙️',md:'📝',log:'🗒️',png:'🖼️',jpg:'🖼️',jpeg:'🖼️',gif:'🖼️',tga:'🖼️',webp:'🖼️',bmp:'🖼️',dds:'🖼️' };
+    return map[ext] || (getFileType(name) === 'incompat' ? '❓' : '📄');
+  }
+
+  function renderTree(node, container, depth) {
+    const folders = Object.keys(node).filter(k => k !== '__files__' && k !== '__path__').sort((a,b) => a.localeCompare(b,'ko'));
+    folders.forEach(name => {
+      const child = node[name];
+      const wrapper = document.createElement('div');
+      const item = document.createElement('div');
+      item.className = 'tree-item';
+      for (let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';item.appendChild(ind);}
+      const icon=document.createElement('span');icon.className='tree-icon';icon.textContent='📁';item.appendChild(icon);
+      const nameEl=document.createElement('span');nameEl.className='tree-name';nameEl.textContent=name;item.appendChild(nameEl);
+      // 폴더는 항상 + 표시 (새로 만든 빈 폴더도 열려야 함)
+      const plus=document.createElement('span');plus.className='tree-plus';plus.textContent='+';item.appendChild(plus);
+      const childContainer=document.createElement('div');childContainer.className='tree-children';
+      item.addEventListener('click',()=>{
+        const isOpen=item.classList.toggle('open');
+        childContainer.classList.toggle('open',isOpen);
+        icon.textContent=isOpen?'📂':'📁';
+        if(isOpen&&childContainer.childElementCount===0){
+          // __path__ 전파: 부모 기준으로 계산
+          if (child.__path__ === undefined) {
+            const parentPath = node.__path__ !== undefined ? node.__path__ : '';
+            child.__path__ = parentPath ? parentPath + '/' + name : name;
+          }
+          renderTree(child,childContainer,depth+1);
+        }
+      });
+      wrapper.appendChild(item);wrapper.appendChild(childContainer);container.appendChild(wrapper);
+    });
+
+    // ── 폴더 안: 폴더 만들기 + 파일 만들기 행 ──
+    if(depth >= 0) {
+      const rootName = document.getElementById('exp-title').textContent;
+      const nodePath = node.__path__ !== undefined ? node.__path__ : '';
+      // fileMap 키로 쓸 전체 경로 (rootName 포함)
+      const folderPath = nodePath ? rootName + '/' + nodePath : rootName;
+
+      // 폴더 만들기
+      const newFolderItem = document.createElement('div');
+      newFolderItem.className = 'tree-item new-item';
+      for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';newFolderItem.appendChild(ind);}
+      const nfIcon=document.createElement('span');nfIcon.className='tree-icon';nfIcon.textContent='📁';newFolderItem.appendChild(nfIcon);
+      const nfName=document.createElement('span');nfName.className='tree-name';nfName.textContent='폴더 만들기…';newFolderItem.appendChild(nfName);
+      newFolderItem.addEventListener('click', e => { e.stopPropagation(); openNewFolderModal(folderPath); });
+      container.appendChild(newFolderItem);
+
+      // 파일 만들기
+      const newFileItem = document.createElement('div');
+      newFileItem.className = 'tree-item new-item';
+      for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';newFileItem.appendChild(ind);}
+      const nfiIcon=document.createElement('span');nfiIcon.className='tree-icon';nfiIcon.textContent='📄';newFileItem.appendChild(nfiIcon);
+      const nfiName=document.createElement('span');nfiName.className='tree-name';nfiName.textContent='파일 만들기…';newFileItem.appendChild(nfiName);
+      newFileItem.addEventListener('click', e => { e.stopPropagation(); openNewFileModal(folderPath); });
+      container.appendChild(newFileItem);
+    }
+
+    if(node.__files__){
+      const sorted=[...node.__files__].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+      const tip = document.getElementById('incompat-tip');
+
+      sorted.forEach(({name,path})=>{
+        const ftype = getFileType(name);
+        const item=document.createElement('div');
+        item.className='tree-item file-item';
+        if(ftype==='incompat') item.style.opacity='0.45';
+
+        for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';item.appendChild(ind);}
+        const icon=document.createElement('span');icon.className='tree-icon';icon.textContent=getFileIcon(name);item.appendChild(icon);
+        const nameEl=document.createElement('span');nameEl.className='tree-name';nameEl.textContent=name;item.appendChild(nameEl);
+
+        // 비호환 호버 툴팁
+        if(ftype==='incompat'){
+          item.addEventListener('mouseenter', e => {
+            tip.style.display='block';
+            tip.style.left=(e.clientX+12)+'px';
+            tip.style.top=(e.clientY-28)+'px';
+          });
+          item.addEventListener('mousemove', e => {
+            tip.style.left=(e.clientX+12)+'px';
+            tip.style.top=(e.clientY-28)+'px';
+          });
+          item.addEventListener('mouseleave', () => { tip.style.display='none'; });
+        }
+
+        item.addEventListener('click',()=>{
+          document.querySelectorAll('.tree-item.file-item.active').forEach(el=>el.classList.remove('active'));
+          item.classList.add('active');
+          openFile(path, name, ftype);
+        });
+        container.appendChild(item);
+      });
+    }
+  }
+
+  // ── 파일 열기 ──
+  function openFile(path, name, ftype) {
+    currentPath = path;
+    isDirty = false;
+    document.getElementById('dirty-dot').classList.remove('on');
+
+    if (ftype === 'text') {
+      const file = fileMap[path];
+      const reader = new FileReader();
+      reader.onload = e => {
+        showPanel('editor');
+        document.getElementById('editor-fname').textContent = name;
+        document.getElementById('editor-area').value = e.target.result;
+        isDirty = false;
+        document.getElementById('dirty-dot').classList.remove('on');
+      };
+      reader.readAsText(file, 'utf-8');
+
+    } else if (ftype === 'image') {
+      const file = fileMap[path];
+      const reader = new FileReader();
+      reader.onload = e => {
+        showPanel('image');
+        document.getElementById('image-fname').textContent = name;
+        const img = document.getElementById('image-preview');
+        img.style.display = 'block';
+        document.getElementById('dds-notice').style.display = 'none';
+        img.src = e.target.result;
+        img.onload = () => {
+          document.getElementById('image-info').textContent = img.naturalWidth + ' × ' + img.naturalHeight + ' px · ' + (file.size/1024).toFixed(1) + ' KB';
+        };
+      };
+      reader.readAsDataURL(file);
+
+    } else if (ftype === 'tga') {
+      const file = fileMap[path];
+      const reader = new FileReader();
+      reader.onload = e => {
+        showPanel('image');
+        document.getElementById('image-fname').textContent = name;
+        document.getElementById('image-preview').style.display = 'none';
+        document.getElementById('dds-notice').style.display = 'flex';
+        document.getElementById('dds-error').style.display = 'none';
+        document.getElementById('dds-canvas').style.display = 'block';
+        try {
+          const info = decodeTGA(e.target.result);
+          document.getElementById('image-info').textContent =
+            info.width + ' × ' + info.height + ' px · TGA · ' + (file.size/1024).toFixed(1) + ' KB';
+        } catch(err) {
+          document.getElementById('dds-canvas').style.display = 'none';
+          document.getElementById('dds-error').style.display = 'flex';
+          document.getElementById('dds-error-msg').textContent = err.message || '이 TGA 포맷은 지원되지 않습니다';
+          document.getElementById('image-info').textContent = (file.size/1024).toFixed(1) + ' KB';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+
+    } else if (ftype === 'dds') {
+      const file = fileMap[path];
+      const reader = new FileReader();
+      reader.onload = e => {
+        showPanel('image');
+        document.getElementById('image-fname').textContent = name;
+        document.getElementById('image-preview').style.display = 'none';
+        document.getElementById('dds-notice').style.display = 'flex';
+        document.getElementById('dds-error').style.display = 'none';
+        document.getElementById('dds-canvas').style.display = 'block';
+        try {
+          const info = decodeDDS(e.target.result);
+          document.getElementById('image-info').textContent =
+            info.width + ' × ' + info.height + ' px · ' + info.format + ' · ' + (file.size/1024).toFixed(1) + ' KB';
+        } catch(err) {
+          document.getElementById('dds-canvas').style.display = 'none';
+          document.getElementById('dds-error').style.display = 'flex';
+          document.getElementById('dds-error-msg').textContent = err.message || '이 DDS 포맷은 지원되지 않습니다';
+          document.getElementById('image-info').textContent = (file.size/1024).toFixed(1) + ' KB';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+
+    } else {
+      showPanel('incompat');
+      document.getElementById('incompat-fname').textContent = name;
+    }
+  }
+
+  // ── 저장 ──
+  function saveFile() {
+    const content = document.getElementById('editor-area').value;
+    const fname = document.getElementById('editor-fname').textContent;
+    const blob = new Blob([content], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fname; a.click();
+    isDirty = false;
+    document.getElementById('dirty-dot').classList.remove('on');
+    showToast('✓ ' + fname + ' 저장됨');
+  }
+
+  function copyContent() {
+    navigator.clipboard.writeText(document.getElementById('editor-area').value)
+      .then(() => showToast('✓ 클립보드에 복사됨'));
+  }
+
+  // ══════════════════════════════════════════
+  // 폴더 / 파일 만들기
+  // ══════════════════════════════════════════
+
+  let _newFolderParentPath = '';
+  let _newFileParentPath   = '';
+
+  // 폴더 이름 필터 (영어·숫자·_·-)
+  function filterFolderName(input) {
+    const before = input.value;
+    input.value = input.value.replace(/[^a-zA-Z0-9_\-]/g, '');
+    document.getElementById('new-folder-warn').textContent =
+      before !== input.value ? '영어, 숫자, 언더바(_), 하이픈(-)만 입력 가능합니다' : '';
+  }
+
+  // 파일 이름 필터 (영어·숫자·_)
+  function filterFileName(input) {
+    const before = input.value;
+    input.value = input.value.replace(/[^a-zA-Z0-9_]/g, '');
+    document.getElementById('new-file-warn').textContent =
+      before !== input.value ? '영어, 숫자, 언더바(_)만 입력 가능합니다' : '';
+  }
+
+  // 확장자 선택
+  function selectExt(label, ext) {
+    document.querySelectorAll('.ext-item').forEach(el => el.classList.remove('selected'));
+    label.classList.add('selected');
+    label.querySelector('input').checked = true;
+    const warn = document.getElementById('ext-warn');
+    warn.textContent = (ext === 'gfx' || ext === 'gui')
+      ? '⚠ 두 확장자는 interface 폴더에서만 작동합니다!' : '';
+  }
+
+  function openNewFolderModal(parentPath) {
+    _newFolderParentPath = parentPath;
+    document.getElementById('new-folder-name').value = '';
+    document.getElementById('new-folder-warn').textContent = '';
+    openModal('newfolder');
+    setTimeout(() => document.getElementById('new-folder-name').focus(), 80);
+  }
+
+  function openNewFileModal(parentPath) {
+    _newFileParentPath = parentPath;
+    document.getElementById('new-file-name').value = '';
+    document.getElementById('new-file-warn').textContent = '';
+    document.getElementById('ext-warn').textContent = '';
+    // 초기화: txt 선택
+    document.querySelectorAll('.ext-item').forEach(el => el.classList.remove('selected'));
+    const firstItem = document.querySelector('.ext-item');
+    if (firstItem) { firstItem.classList.add('selected'); firstItem.querySelector('input').checked = true; }
+    openModal('newfile');
+    setTimeout(() => document.getElementById('new-file-name').focus(), 80);
+  }
+
+  function confirmNewFolder() {
+    const name = document.getElementById('new-folder-name').value.trim();
+    if (!name) { document.getElementById('new-folder-warn').textContent = '폴더 이름을 입력해주세요'; return; }
+
+    // 루트 or 경로 결정
+    const rootName = document.getElementById('exp-title').textContent;
+    const parentPath = _newFolderParentPath ? _newFolderParentPath : rootName;
+    const folderPath = parentPath + '/' + name;
+
+    // 중복 방지
+    if (fileMap[folderPath + '/.keep'] !== undefined) {
+      document.getElementById('new-folder-warn').textContent = '같은 이름의 폴더가 이미 있습니다'; return;
+    }
+
+    // 가상 .keep 파일로 폴더 존재 표시
+    const blob = new Blob([''], { type: 'text/plain' });
+    fileMap[folderPath + '/.keep'] = new File([blob], '.keep');
+
+    // 트리 재구성
+    rebuildTree();
+    closeModal('modal-newfolder');
+    showToast('📁 ' + name + ' 폴더가 만들어졌습니다');
+  }
+
+  function confirmNewFile() {
+    const name = document.getElementById('new-file-name').value.trim();
+    if (!name) { document.getElementById('new-file-warn').textContent = '파일 이름을 입력해주세요'; return; }
+    const ext = document.querySelector('.ext-item.selected input').value;
+    const fileName = name + '.' + ext;
+
+    const rootName = document.getElementById('exp-title').textContent;
+    const parentPath = _newFileParentPath ? _newFileParentPath : rootName;
+    const filePath = parentPath + '/' + fileName;
+
+    if (fileMap[filePath] !== undefined) {
+      document.getElementById('new-file-warn').textContent = '같은 이름의 파일이 이미 있습니다'; return;
+    }
+
+    const blob = new Blob([''], { type: 'text/plain' });
+    fileMap[filePath] = new File([blob], fileName);
+
+    rebuildTree();
+    closeModal('modal-newfile');
+    showToast('📄 ' + fileName + ' 파일이 만들어졌습니다');
+
+    // 새 파일 바로 열기
+    setTimeout(() => openFile(filePath, fileName, 'text'), 120);
+  }
+
+  // 트리 재구성 (fileMap 기준)
+  function rebuildTree() {
+    const tree = {};
+    const rootName = document.getElementById('exp-title').textContent;
+    Object.keys(fileMap).forEach(path => {
+      const parts = path.split('/');
+      let node = tree;
+      let currentPath = '';
+      parts.forEach((part, i) => {
+        if (i === parts.length - 1) {
+          if (!node.__files__) node.__files__ = [];
+          if (part !== '.keep') node.__files__.push({ name: part, path });
+        } else {
+          currentPath = currentPath ? currentPath + '/' + part : part;
+          if (!node[part]) node[part] = {};
+          node = node[part];
+          // __path__: 루트 노드는 '', 하위는 rootName 뒤 상대경로
+          if (node.__path__ === undefined) {
+            node.__path__ = (part === rootName) ? '' : currentPath.replace(rootName + '/', '');
+          }
+        }
+      });
+    });
+    const treeEl = document.getElementById('exp-tree');
+    treeEl.innerHTML = '';
+    const rootNode = tree[rootName] || tree;
+    if (rootNode.__path__ === undefined) rootNode.__path__ = '';
+    renderTree(rootNode, treeEl, 0);
+  }
+
+  // ── 모드 이름 필터 (영어 + 하이픈만 허용) ──
+  function filterModName(input) {
+    const before = input.value;
+    const filtered = input.value.replace(/[^a-zA-Z0-9\-]/g, '');
+    input.value = filtered;
+    const warn = document.getElementById('mod-name-warn');
+    warn.textContent = before !== filtered ? '영어, 숫자, 하이픈(-)만 입력 가능합니다' : '';
+  }
+
+  // ── 모드 만들기 실행 ──
+  function createMod() {
+    const input = document.getElementById('mod-name-input');
+    const name = input.value.trim();
+    if (!name) {
+      document.getElementById('mod-name-warn').textContent = '모드 이름을 입력해주세요';
+      input.focus();
+      return;
+    }
+
+    const descriptorContent =
+`version="1"
+tags={
+\t""
+\t""
+\t""
+\t# 따옴표 안에 아래 목록에서 최대 3개를 선택하세요 (겹치지 않게):
+\t# Alternative History | Balance | Events | Fixes | Gameplay
+\t# Graphics | Historical | Ideologies | Map | Military
+\t# National Focuses | Sound | Technologies | Translation | Utilities
+}
+name="${name}"
+supported_version="1.17.3.0"`;
+
+    // 가상 파일맵에 descriptor.mod 등록
+    const blob = new Blob([descriptorContent], { type: 'text/plain' });
+    const virtualFile = new File([blob], 'descriptor.mod', { type: 'text/plain' });
+    const virtualPath = name + '/descriptor.mod';
+    fileMap[virtualPath] = virtualFile;
+
+    // 트리 구성: 루트 폴더 하나, descriptor.mod 하나
+    const treeEl = document.getElementById('exp-tree');
+    treeEl.innerHTML = '';
+    const fakeNode = { __files__: [{ name: 'descriptor.mod', path: virtualPath }] };
+    renderTree(fakeNode, treeEl, 0);
+
+    document.getElementById('exp-title').textContent = name;
+    document.getElementById('exp-root-name').textContent = '새 모드';
+
+    closeModal('modal-create');
+    input.value = '';
+    document.getElementById('mod-name-warn').textContent = '';
+
+    document.getElementById('explorer').classList.add('show');
+    showPanel('empty');
+
+    // descriptor.mod 자동 열기
+    setTimeout(() => openFile(virtualPath, 'descriptor.mod', 'text'), 80);
+  }
+
+
+  // ══════════════════════════════════════════
+  // TGA 디코더 (Type1/2/3/9/10/11 + RLE)
+  // ══════════════════════════════════════════
+  function decodeTGA(buffer) {
+    const data = new Uint8Array(buffer);
+    const idLen      = data[0];
+    const colorMapType = data[1];
+    const imageType  = data[2];
+    // colormap info: 3..7 (skip)
+    const xOrigin    = data[8]  | (data[9]  << 8);
+    const yOrigin    = data[10] | (data[11] << 8);
+    const width      = data[12] | (data[13] << 8);
+    const height     = data[14] | (data[15] << 8);
+    const bpp        = data[16];
+    const descriptor = data[17];
+    const flipV      = !(descriptor & 0x20); // bit5=0 → bottom-left origin
+    const flipH      =  (descriptor & 0x10); // bit4=1 → right-left
+
+    if (width === 0 || height === 0) throw new Error('TGA 크기가 0입니다');
+
+    // 색상맵 크기 계산
+    const cmEntries   = data[5] | (data[6] << 8);
+    const cmEntryBits = data[7];
+    const cmBytes     = Math.ceil(cmEntryBits / 8) * cmEntries;
+
+    let offset = 18 + idLen + (colorMapType === 1 ? cmBytes : 0);
+    const rle = imageType > 8;
+    const baseType = imageType > 8 ? imageType - 8 : imageType;
+    // baseType: 1=색상맵, 2=RGB, 3=그레이
+
+    const bytesPerPixel = Math.ceil(bpp / 8);
+    const pixels = new Uint8Array(width * height * 4);
+
+    // 색상맵 테이블 파싱
+    let colorMap = null;
+    if (colorMapType === 1) {
+      const cmStart = 18 + idLen;
+      const cmBpp = Math.ceil(cmEntryBits / 8);
+      colorMap = [];
+      for (let i = 0; i < cmEntries; i++) {
+        const base = cmStart + i * cmBpp;
+        colorMap.push(parseTGAPixel(data, base, cmEntryBits));
+      }
+    }
+
+    function parseTGAPixel(d, off, bits) {
+      if (bits === 32) return [d[off+2], d[off+1], d[off], d[off+3]];
+      if (bits === 24) return [d[off+2], d[off+1], d[off], 255];
+      if (bits === 16) {
+        const v = d[off] | (d[off+1] << 8);
+        return [(v>>10&31)*8, (v>>5&31)*8, (v&31)*8, 255];
+      }
+      if (bits === 15) {
+        const v = d[off] | (d[off+1] << 8);
+        return [(v>>10&31)*8, (v>>5&31)*8, (v&31)*8, 255];
+      }
+      if (bits === 8) return [d[off], d[off], d[off], 255];
+      return [0,0,0,255];
+    }
+
+    let pi = 0; // pixel index
+    if (!rle) {
+      // 비압축
+      const total = width * height;
+      for (let i = 0; i < total; i++, offset += bytesPerPixel) {
+        let c;
+        if (baseType === 1 && colorMap) {
+          const idx = bpp === 8 ? data[offset] : (data[offset] | (data[offset+1]<<8));
+          c = colorMap[idx] || [0,0,0,255];
+        } else {
+          c = parseTGAPixel(data, offset, bpp);
+        }
+        pixels[pi]=c[0];pixels[pi+1]=c[1];pixels[pi+2]=c[2];pixels[pi+3]=c[3];
+        pi+=4;
+      }
+    } else {
+      // RLE 압축
+      let count = 0;
+      while (count < width * height) {
+        const packet = data[offset++];
+        const rep = packet & 0x80;
+        const len = (packet & 0x7F) + 1;
+        if (rep) {
+          let c;
+          if (baseType === 1 && colorMap) {
+            const idx = bpp===8?data[offset]:(data[offset]|(data[offset+1]<<8));
+            c = colorMap[idx]||[0,0,0,255]; offset+=bytesPerPixel;
+          } else { c=parseTGAPixel(data,offset,bpp); offset+=bytesPerPixel; }
+          for (let i=0;i<len;i++,pi+=4) {
+            pixels[pi]=c[0];pixels[pi+1]=c[1];pixels[pi+2]=c[2];pixels[pi+3]=c[3];
+          }
+        } else {
+          for (let i=0;i<len;i++,pi+=4,offset+=bytesPerPixel) {
+            let c;
+            if (baseType===1&&colorMap){const idx=bpp===8?data[offset]:(data[offset]|(data[offset+1]<<8));c=colorMap[idx]||[0,0,0,255];}
+            else c=parseTGAPixel(data,offset,bpp);
+            pixels[pi]=c[0];pixels[pi+1]=c[1];pixels[pi+2]=c[2];pixels[pi+3]=c[3];
+          }
+        }
+        count+=len;
+      }
+    }
+
+    // 수직 플립 (TGA 기본은 bottom-left origin)
+    if (flipV) {
+      for (let y=0;y<height/2;y++) {
+        const y2=height-1-y;
+        for (let x=0;x<width;x++) {
+          const a=(y*width+x)*4, b=(y2*width+x)*4;
+          for (let c=0;c<4;c++) { const t=pixels[a+c]; pixels[a+c]=pixels[b+c]; pixels[b+c]=t; }
+        }
+      }
+    }
+
+    const canvas = document.getElementById('dds-canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.createImageData(width, height);
+    imgData.data.set(pixels);
+    ctx.putImageData(imgData, 0, 0);
+    return { width, height };
+  }
+
+  // ══════════════════════════════════════════
+  // DDS 디코더 (BC1/BC2/BC3/BC4/BC5/RGBA/RGB)
+  // ══════════════════════════════════════════
+  function decodeDDS(buffer) {
+    const data = new Uint8Array(buffer);
+    const view = new DataView(buffer);
+
+    // Magic: "DDS "
+    if (view.getUint32(0, true) !== 0x20534444)
+      throw new Error('DDS 매직 넘버가 올바르지 않습니다');
+
+    const height  = view.getUint32(12, true);
+    const width   = view.getUint32(16, true);
+    const pfFlags = view.getUint32(80, true);
+    const fourCC  = view.getUint32(84, true);
+    const rgbBits = view.getUint32(88, true);
+    const rMask   = view.getUint32(92, true);
+    const gMask   = view.getUint32(96, true);
+    const bMask   = view.getUint32(100, true);
+    const aMask   = view.getUint32(104, true);
+
+    const DDPF_FOURCC = 0x4;
+    const DDPF_RGB    = 0x40;
+    const DDPF_RGBA   = 0x41;
+    const DDPF_LUMINANCE = 0x20000;
+
+    let pixels, format;
+    const offset = 128; // 기본 헤더 크기
+
+    function fourCCStr(v) {
+      return String.fromCharCode(v&0xFF,(v>>8)&0xFF,(v>>16)&0xFF,(v>>24)&0xFF);
+    }
+
+    if (pfFlags & DDPF_FOURCC) {
+      const fc = fourCCStr(fourCC);
+      if (fc === 'DXT1') { pixels = decodeBC1(data, offset, width, height); format = 'BC1/DXT1'; }
+      else if (fc === 'DXT3') { pixels = decodeBC2(data, offset, width, height); format = 'BC2/DXT3'; }
+      else if (fc === 'DXT5') { pixels = decodeBC3(data, offset, width, height); format = 'BC3/DXT5'; }
+      else if (fc === 'ATI1' || fc === 'BC4U') { pixels = decodeBC4(data, offset, width, height); format = 'BC4/ATI1'; }
+      else if (fc === 'ATI2' || fc === 'BC5U') { pixels = decodeBC5(data, offset, width, height); format = 'BC5/ATI2'; }
+      else if (fourCC === 111) { pixels = decodeR16F(data, offset, width, height); format = 'R16F'; }
+      else if (fourCC === 113) { pixels = decodeRGBA16F(data, offset, width, height); format = 'RGBA16F'; }
+      else throw new Error('지원되지 않는 FourCC: ' + fc);
+    } else if ((pfFlags & DDPF_RGB) || (pfFlags & DDPF_RGBA)) {
+      pixels = decodeUncompressed(data, offset, width, height, rgbBits, rMask, gMask, bMask, aMask);
+      format = rgbBits + 'bpp RGB'+(aMask?'+A':'');
+    } else if (pfFlags & DDPF_LUMINANCE) {
+      pixels = decodeLuminance(data, offset, width, height, rgbBits);
+      format = 'Luminance';
+    } else {
+      throw new Error('알 수 없는 픽셀 포맷');
+    }
+
+    const canvas = document.getElementById('dds-canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.createImageData(width, height);
+    imgData.data.set(pixels);
+    ctx.putImageData(imgData, 0, 0);
+    return { width, height, format };
+  }
+
+  // ── BC1 (DXT1) ──
+  function decodeBC1(data, offset, w, h) {
+    const out = new Uint8Array(w * h * 4);
+    const bw = Math.ceil(w/4), bh = Math.ceil(h/4);
+    let src = offset;
+    for (let by=0; by<bh; by++) for (let bx=0; bx<bw; bx++) {
+      const c0 = data[src]|(data[src+1]<<8);
+      const c1 = data[src+2]|(data[src+3]<<8);
+      src+=4;
+      const lut = buildBC1Palette(c0, c1);
+      const bits = data[src]|(data[src+1]<<8)|(data[src+2]<<16)|(data[src+3]<<24);
+      src+=4;
+      for (let py=0; py<4; py++) for (let px=0; px<4; px++) {
+        const idx=(bits>>((py*4+px)*2))&3;
+        const dx=bx*4+px, dy=by*4+py;
+        if (dx>=w||dy>=h) continue;
+        const p=(dy*w+dx)*4;
+        out[p]=lut[idx*4]; out[p+1]=lut[idx*4+1]; out[p+2]=lut[idx*4+2]; out[p+3]=lut[idx*4+3];
+      }
+    }
+    return out;
+  }
+
+  function buildBC1Palette(c0, c1) {
+    const r0=(c0>>11)*255/31|0, g0=((c0>>5)&63)*255/63|0, b0=(c0&31)*255/31|0;
+    const r1=(c1>>11)*255/31|0, g1=((c1>>5)&63)*255/63|0, b1=(c1&31)*255/31|0;
+    const lut = new Uint8Array(16);
+    lut[0]=r0;lut[1]=g0;lut[2]=b0;lut[3]=255;
+    lut[4]=r1;lut[5]=g1;lut[6]=b1;lut[7]=255;
+    if (c0>c1) {
+      lut[8]=(2*r0+r1)/3|0;lut[9]=(2*g0+g1)/3|0;lut[10]=(2*b0+b1)/3|0;lut[11]=255;
+      lut[12]=(r0+2*r1)/3|0;lut[13]=(g0+2*g1)/3|0;lut[14]=(b0+2*b1)/3|0;lut[15]=255;
+    } else {
+      lut[8]=(r0+r1)>>1;lut[9]=(g0+g1)>>1;lut[10]=(b0+b1)>>1;lut[11]=255;
+      lut[12]=0;lut[13]=0;lut[14]=0;lut[15]=0;
+    }
+    return lut;
+  }
+
+  // ── BC2 (DXT3) ──
+  function decodeBC2(data, offset, w, h) {
+    const out = new Uint8Array(w * h * 4);
+    const bw=Math.ceil(w/4), bh=Math.ceil(h/4);
+    let src=offset;
+    for (let by=0;by<bh;by++) for (let bx=0;bx<bw;bx++) {
+      const alphaBytes=data.slice(src,src+8); src+=8;
+      const c0=data[src]|(data[src+1]<<8); const c1=data[src+2]|(data[src+3]<<8); src+=4;
+      const lut=buildBC1Palette(c0,c1);
+      const bits=data[src]|(data[src+1]<<8)|(data[src+2]<<16)|(data[src+3]<<24); src+=4;
+      for (let py=0;py<4;py++) for (let px=0;px<4;px++) {
+        const idx=(bits>>((py*4+px)*2))&3;
+        const aByte=alphaBytes[py*2+(px>>1)];
+        const a=px%2===0?(aByte&0xF)*17:(aByte>>4)*17;
+        const dx=bx*4+px, dy=by*4+py;
+        if(dx>=w||dy>=h) continue;
+        const p=(dy*w+dx)*4;
+        out[p]=lut[idx*4];out[p+1]=lut[idx*4+1];out[p+2]=lut[idx*4+2];out[p+3]=a;
+      }
+    }
+    return out;
+  }
+
+  // ── BC3 (DXT5) ──
+  function decodeBC3(data, offset, w, h) {
+    const out=new Uint8Array(w*h*4);
+    const bw=Math.ceil(w/4), bh=Math.ceil(h/4);
+    let src=offset;
+    for (let by=0;by<bh;by++) for (let bx=0;bx<bw;bx++) {
+      const a0=data[src], a1=data[src+1]; src+=2;
+      const aLut=buildAlphaPalette(a0,a1);
+      const aBits=[];
+      for(let i=0;i<6;i++) aBits.push(data[src+i]); src+=6;
+      const ab=BigInt(aBits[0])|(BigInt(aBits[1])<<8n)|(BigInt(aBits[2])<<16n)|(BigInt(aBits[3])<<24n)|(BigInt(aBits[4])<<32n)|(BigInt(aBits[5])<<40n);
+      const c0=data[src]|(data[src+1]<<8); const c1=data[src+2]|(data[src+3]<<8); src+=4;
+      const lut=buildBC1Palette(c0,c1);
+      const bits=data[src]|(data[src+1]<<8)|(data[src+2]<<16)|(data[src+3]<<24); src+=4;
+      for (let py=0;py<4;py++) for (let px=0;px<4;px++) {
+        const ci=(py*4+px); const idx=(bits>>(ci*2))&3;
+        const ai=Number((ab>>(BigInt(ci)*3n))&7n);
+        const dx=bx*4+px, dy=by*4+py;
+        if(dx>=w||dy>=h) continue;
+        const p=(dy*w+dx)*4;
+        out[p]=lut[idx*4];out[p+1]=lut[idx*4+1];out[p+2]=lut[idx*4+2];out[p+3]=aLut[ai];
+      }
+    }
+    return out;
+  }
+
+  function buildAlphaPalette(a0, a1) {
+    const t=new Uint8Array(8);
+    t[0]=a0;t[1]=a1;
+    if(a0>a1){for(let i=1;i<=6;i++)t[i+1]=((7-i)*a0+i*a1)/7|0;}
+    else{for(let i=1;i<=4;i++)t[i+1]=((5-i)*a0+i*a1)/5|0;t[6]=0;t[7]=255;}
+    return t;
+  }
+
+  // ── BC4 (ATI1 / grayscale) ──
+  function decodeBC4(data, offset, w, h) {
+    const out=new Uint8Array(w*h*4);
+    const bw=Math.ceil(w/4), bh=Math.ceil(h/4);
+    let src=offset;
+    for(let by=0;by<bh;by++) for(let bx=0;bx<bw;bx++){
+      const r0=data[src],r1=data[src+1]; src+=2;
+      const rLut=buildAlphaPalette(r0,r1);
+      const rb=[];for(let i=0;i<6;i++)rb.push(data[src+i]);src+=6;
+      const bits=BigInt(rb[0])|(BigInt(rb[1])<<8n)|(BigInt(rb[2])<<16n)|(BigInt(rb[3])<<24n)|(BigInt(rb[4])<<32n)|(BigInt(rb[5])<<40n);
+      for(let py=0;py<4;py++) for(let px=0;px<4;px++){
+        const ci=py*4+px; const ri=Number((bits>>(BigInt(ci)*3n))&7n);
+        const dx=bx*4+px, dy=by*4+py;
+        if(dx>=w||dy>=h) continue;
+        const p=(dy*w+dx)*4; const v=rLut[ri];
+        out[p]=v;out[p+1]=v;out[p+2]=v;out[p+3]=255;
+      }
+    }
+    return out;
+  }
+
+  // ── BC5 (ATI2 / normal map) ──
+  function decodeBC5(data, offset, w, h) {
+    const out=new Uint8Array(w*h*4);
+    const bw=Math.ceil(w/4), bh=Math.ceil(h/4);
+    let src=offset;
+    for(let by=0;by<bh;by++) for(let bx=0;bx<bw;bx++){
+      const r0=data[src],r1=data[src+1];src+=2;
+      const rLut=buildAlphaPalette(r0,r1);
+      const rb=[];for(let i=0;i<6;i++)rb.push(data[src+i]);src+=6;
+      const rBits=BigInt(rb[0])|(BigInt(rb[1])<<8n)|(BigInt(rb[2])<<16n)|(BigInt(rb[3])<<24n)|(BigInt(rb[4])<<32n)|(BigInt(rb[5])<<40n);
+      const g0=data[src],g1=data[src+1];src+=2;
+      const gLut=buildAlphaPalette(g0,g1);
+      const gb=[];for(let i=0;i<6;i++)gb.push(data[src+i]);src+=6;
+      const gBits=BigInt(gb[0])|(BigInt(gb[1])<<8n)|(BigInt(gb[2])<<16n)|(BigInt(gb[3])<<24n)|(BigInt(gb[4])<<32n)|(BigInt(gb[5])<<40n);
+      for(let py=0;py<4;py++) for(let px=0;px<4;px++){
+        const ci=py*4+px;
+        const ri=Number((rBits>>(BigInt(ci)*3n))&7n);
+        const gi=Number((gBits>>(BigInt(ci)*3n))&7n);
+        const dx=bx*4+px, dy=by*4+py;
+        if(dx>=w||dy>=h) continue;
+        const p=(dy*w+dx)*4;
+        const rx=rLut[ri]/127.5-1, gy=gLut[gi]/127.5-1;
+        const bz=Math.sqrt(Math.max(0,1-rx*rx-gy*gy));
+        out[p]=rLut[ri];out[p+1]=gLut[gi];out[p+2]=(bz*127.5+127.5)|0;out[p+3]=255;
+      }
+    }
+    return out;
+  }
+
+  // ── 비압축 RGB/RGBA ──
+  function decodeUncompressed(data, offset, w, h, bits, rM, gM, bM, aM) {
+    const out=new Uint8Array(w*h*4);
+    const bytesPerPixel=bits>>3;
+    function extractChannel(val,mask){
+      if(!mask)return 255;
+      let shift=0; let m=mask; while(!(m&1)){m>>=1;shift++;}
+      const maxVal=mask>>shift;
+      return ((val&mask)>>shift)*255/maxVal|0;
+    }
+    for(let i=0;i<w*h;i++){
+      let val=0;
+      for(let b=0;b<bytesPerPixel;b++) val|=(data[offset+i*bytesPerPixel+b]<<(b*8));
+      const p=i*4;
+      out[p]=extractChannel(val,rM);out[p+1]=extractChannel(val,gM);
+      out[p+2]=extractChannel(val,bM);out[p+3]=aM?extractChannel(val,aM):255;
+    }
+    return out;
+  }
+
+  // ── Luminance ──
+  function decodeLuminance(data, offset, w, h, bits) {
+    const out=new Uint8Array(w*h*4);
+    const bpp=bits>>3;
+    for(let i=0;i<w*h;i++){
+      const v=data[offset+i*bpp]; const p=i*4;
+      out[p]=v;out[p+1]=v;out[p+2]=v;out[p+3]=255;
+    }
+    return out;
+  }
+
+  // ── R16F ──
+  function decodeR16F(data, offset, w, h) {
+    const out=new Uint8Array(w*h*4);
+    const view=new DataView(data.buffer||new Uint8Array(data).buffer);
+    for(let i=0;i<w*h;i++){
+      const f=halfToFloat(view.getUint16(offset+i*2,true));
+      const v=Math.min(255,Math.max(0,f*255))|0; const p=i*4;
+      out[p]=v;out[p+1]=v;out[p+2]=v;out[p+3]=255;
+    }
+    return out;
+  }
+
+  // ── RGBA16F ──
+  function decodeRGBA16F(data, offset, w, h) {
+    const out=new Uint8Array(w*h*4);
+    const view=new DataView(data.buffer||new Uint8Array(data).buffer);
+    for(let i=0;i<w*h;i++){
+      const p=i*4;
+      out[p]  =Math.min(255,Math.max(0,halfToFloat(view.getUint16(offset+i*8,true))*255))|0;
+      out[p+1]=Math.min(255,Math.max(0,halfToFloat(view.getUint16(offset+i*8+2,true))*255))|0;
+      out[p+2]=Math.min(255,Math.max(0,halfToFloat(view.getUint16(offset+i*8+4,true))*255))|0;
+      out[p+3]=Math.min(255,Math.max(0,halfToFloat(view.getUint16(offset+i*8+6,true))*255))|0;
+    }
+    return out;
+  }
+
+  function halfToFloat(h) {
+    const exp=(h>>10)&0x1F, mant=h&0x3FF, sign=h>>15;
+    let val;
+    if(exp===0) val=mant/1024*Math.pow(2,-14);
+    else if(exp===31) val=mant?NaN:Infinity;
+    else val=(1+mant/1024)*Math.pow(2,exp-15);
+    return sign?-val:val;
+  }
+
+</script>
+</body>
+</html>
