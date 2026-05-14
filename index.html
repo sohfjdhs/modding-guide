@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>테스트용 타이틀</title>
+  <title>하츠오브아이언4 모드 완벽 호환</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
@@ -137,7 +137,15 @@
     /* 토스트 */
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(30,35,46,0.95); border: 1px solid rgba(125,211,252,0.3); color: #7dd3fc; font-size: 0.82rem; padding: 10px 22px; border-radius: 8px; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 999; pointer-events: none; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .dl-notice { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(15,20,30,0.97); border: 1px solid rgba(125,211,252,0.35); border-radius: 14px; padding: 18px 28px; z-index: 1000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; text-align: center; min-width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .dl-notice.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .dl-notice-icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .dl-notice-title { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 10px; }
+    .dl-notice-path { font-family: "Consolas","Monaco","Courier New",monospace; font-size: 0.8rem; color: #7dd3fc; background: rgba(125,211,252,0.08); border: 1px solid rgba(125,211,252,0.2); border-radius: 8px; padding: 9px 14px; letter-spacing: 0.01em; word-break: break-all; }
+    .dl-notice-close { margin-top: 12px; display: inline-block; font-size: 0.72rem; color: rgba(255,255,255,0.3); cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: color 0.15s; }
+    .dl-notice-close:hover { color: rgba(255,255,255,0.7); }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -177,6 +185,10 @@
       <div class="exp-title" id="exp-title">mod 폴더</div>
       <div class="exp-root-name" id="exp-root-name"></div>
     </div>
+    <button class="exp-back" onclick="downloadAll()" style="margin-left:auto;background:rgba(125,211,252,0.15);border-color:rgba(125,211,252,0.3);color:#7dd3fc;display:flex;align-items:center;gap:7px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      전체 다운로드
+    </button>
   </div>
   <div class="exp-body">
     <div class="exp-tree" id="exp-tree"></div>
@@ -253,6 +265,13 @@
       style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:0.92rem;outline:none;margin-bottom:8px;transition:border-color 0.2s;"
       oninput="filterModName(this)" onkeydown="if(event.key==='Enter')createMod()" />
     <div id="mod-name-warn" style="font-size:0.72rem;color:rgba(255,100,100,0.8);min-height:18px;margin-bottom:14px;text-align:left;"></div>
+    <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:rgba(125,211,252,0.06);border:1px solid rgba(125,211,252,0.18);border-radius:12px;padding:14px 16px;margin-bottom:18px;text-align:left;">
+      <input type="checkbox" id="tutorial-check" style="width:18px;height:18px;margin-top:2px;accent-color:#7dd3fc;cursor:pointer;flex-shrink:0;" />
+      <div>
+        <div style="font-size:0.88rem;font-weight:500;color:#7dd3fc;margin-bottom:4px;">📚 튜토리얼 템플릿 포함</div>
+        <div style="font-size:0.74rem;color:rgba(255,255,255,0.4);line-height:1.6;">기본 폴더 구조와 주석이 달린 예제 파일을 함께 생성합니다.<br><span style="color:rgba(255,255,255,0.25);">common/ events/ gfx/ history/ interface/ localisation/</span></div>
+      </div>
+    </label>
     <div style="display:flex;gap:10px;justify-content:center;">
       <button class="modal-close" onclick="closeModal('modal-create')" style="flex:1;">취소</button>
       <button class="modal-close" onclick="createMod()" style="flex:1;background:rgba(125,211,252,0.18);color:#7dd3fc;border-color:rgba(125,211,252,0.25);">만들기</button>
@@ -433,6 +452,11 @@
   }
 
   function renderTree(node, container, depth) {
+    const rootName = document.getElementById('exp-title').textContent;
+    const nodePath = node.__path__ !== undefined ? node.__path__ : '';
+    const folderPath = nodePath ? rootName + '/' + nodePath : rootName;
+
+    // ── 1. 하위 폴더 ──
     const folders = Object.keys(node).filter(k => k !== '__files__' && k !== '__path__').sort((a,b) => a.localeCompare(b,'ko'));
     folders.forEach(name => {
       const child = node[name];
@@ -442,7 +466,6 @@
       for (let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';item.appendChild(ind);}
       const icon=document.createElement('span');icon.className='tree-icon';icon.textContent='📁';item.appendChild(icon);
       const nameEl=document.createElement('span');nameEl.className='tree-name';nameEl.textContent=name;item.appendChild(nameEl);
-      // 폴더는 항상 + 표시 (새로 만든 빈 폴더도 열려야 함)
       const plus=document.createElement('span');plus.className='tree-plus';plus.textContent='+';item.appendChild(plus);
       const childContainer=document.createElement('div');childContainer.className='tree-children';
       item.addEventListener('click',()=>{
@@ -450,7 +473,6 @@
         childContainer.classList.toggle('open',isOpen);
         icon.textContent=isOpen?'📂':'📁';
         if(isOpen&&childContainer.childElementCount===0){
-          // __path__ 전파: 부모 기준으로 계산
           if (child.__path__ === undefined) {
             const parentPath = node.__path__ !== undefined ? node.__path__ : '';
             child.__path__ = parentPath ? parentPath + '/' + name : name;
@@ -461,60 +483,23 @@
       wrapper.appendChild(item);wrapper.appendChild(childContainer);container.appendChild(wrapper);
     });
 
-    // ── 폴더 안: 폴더 만들기 + 파일 만들기 행 ──
-    if(depth >= 0) {
-      const rootName = document.getElementById('exp-title').textContent;
-      const nodePath = node.__path__ !== undefined ? node.__path__ : '';
-      // fileMap 키로 쓸 전체 경로 (rootName 포함)
-      const folderPath = nodePath ? rootName + '/' + nodePath : rootName;
-
-      // 폴더 만들기
-      const newFolderItem = document.createElement('div');
-      newFolderItem.className = 'tree-item new-item';
-      for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';newFolderItem.appendChild(ind);}
-      const nfIcon=document.createElement('span');nfIcon.className='tree-icon';nfIcon.textContent='📁';newFolderItem.appendChild(nfIcon);
-      const nfName=document.createElement('span');nfName.className='tree-name';nfName.textContent='폴더 만들기…';newFolderItem.appendChild(nfName);
-      newFolderItem.addEventListener('click', e => { e.stopPropagation(); openNewFolderModal(folderPath); });
-      container.appendChild(newFolderItem);
-
-      // 파일 만들기
-      const newFileItem = document.createElement('div');
-      newFileItem.className = 'tree-item new-item';
-      for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';newFileItem.appendChild(ind);}
-      const nfiIcon=document.createElement('span');nfiIcon.className='tree-icon';nfiIcon.textContent='📄';newFileItem.appendChild(nfiIcon);
-      const nfiName=document.createElement('span');nfiName.className='tree-name';nfiName.textContent='파일 만들기…';newFileItem.appendChild(nfiName);
-      newFileItem.addEventListener('click', e => { e.stopPropagation(); openNewFileModal(folderPath); });
-      container.appendChild(newFileItem);
-    }
-
+    // ── 2. 파일 목록 ──
     if(node.__files__){
       const sorted=[...node.__files__].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
       const tip = document.getElementById('incompat-tip');
-
       sorted.forEach(({name,path})=>{
         const ftype = getFileType(name);
         const item=document.createElement('div');
         item.className='tree-item file-item';
         if(ftype==='incompat') item.style.opacity='0.45';
-
         for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';item.appendChild(ind);}
         const icon=document.createElement('span');icon.className='tree-icon';icon.textContent=getFileIcon(name);item.appendChild(icon);
         const nameEl=document.createElement('span');nameEl.className='tree-name';nameEl.textContent=name;item.appendChild(nameEl);
-
-        // 비호환 호버 툴팁
         if(ftype==='incompat'){
-          item.addEventListener('mouseenter', e => {
-            tip.style.display='block';
-            tip.style.left=(e.clientX+12)+'px';
-            tip.style.top=(e.clientY-28)+'px';
-          });
-          item.addEventListener('mousemove', e => {
-            tip.style.left=(e.clientX+12)+'px';
-            tip.style.top=(e.clientY-28)+'px';
-          });
+          item.addEventListener('mouseenter', e => { tip.style.display='block'; tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-28)+'px'; });
+          item.addEventListener('mousemove', e => { tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-28)+'px'; });
           item.addEventListener('mouseleave', () => { tip.style.display='none'; });
         }
-
         item.addEventListener('click',()=>{
           document.querySelectorAll('.tree-item.file-item.active').forEach(el=>el.classList.remove('active'));
           item.classList.add('active');
@@ -523,6 +508,25 @@
         container.appendChild(item);
       });
     }
+
+    // ── 3. 폴더/파일 만들기 행 (맨 마지막) ──
+    // 폴더 만들기
+    const newFolderItem = document.createElement('div');
+    newFolderItem.className = 'tree-item new-item';
+    for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';newFolderItem.appendChild(ind);}
+    const nfIcon=document.createElement('span');nfIcon.className='tree-icon';nfIcon.textContent='📁';newFolderItem.appendChild(nfIcon);
+    const nfName=document.createElement('span');nfName.className='tree-name';nfName.textContent='폴더 만들기…';newFolderItem.appendChild(nfName);
+    newFolderItem.addEventListener('click', e => { e.stopPropagation(); openNewFolderModal(folderPath); });
+    container.appendChild(newFolderItem);
+
+    // 파일 만들기
+    const newFileItem = document.createElement('div');
+    newFileItem.className = 'tree-item new-item';
+    for(let i=0;i<depth;i++){const ind=document.createElement('span');ind.className='tree-indent';newFileItem.appendChild(ind);}
+    const nfiIcon=document.createElement('span');nfiIcon.className='tree-icon';nfiIcon.textContent='📄';newFileItem.appendChild(nfiIcon);
+    const nfiName=document.createElement('span');nfiName.className='tree-name';nfiName.textContent='파일 만들기…';newFileItem.appendChild(nfiName);
+    newFileItem.addEventListener('click', e => { e.stopPropagation(); openNewFileModal(folderPath); });
+    container.appendChild(newFileItem);
   }
 
   // ── 파일 열기 ──
@@ -781,7 +785,15 @@
       return;
     }
 
-    const descriptorContent =
+    const useTutorial = document.getElementById('tutorial-check').checked;
+
+    function addFile(path, content) {
+      const b = new Blob([content], { type: 'text/plain' });
+      fileMap[path] = new File([b], path.split('/').pop());
+    }
+
+    // ── 항상 생성 ──
+    addFile(name + '/descriptor.mod',
 `version="1"
 tags={
 \t""
@@ -793,32 +805,185 @@ tags={
 \t# National Focuses | Sound | Technologies | Translation | Utilities
 }
 name="${name}"
-supported_version="1.17.3.0"`;
+supported_version="1.17.3.0"`);
 
-    // 가상 파일맵에 descriptor.mod 등록
-    const blob = new Blob([descriptorContent], { type: 'text/plain' });
-    const virtualFile = new File([blob], 'descriptor.mod', { type: 'text/plain' });
-    const virtualPath = name + '/descriptor.mod';
-    fileMap[virtualPath] = virtualFile;
+    // ── 튜토리얼 체크 시에만 생성 ──
+    if (useTutorial) {
+      addFile(name + '/common/national_focus/example_focus.txt',
+`# =================================================================
+# 국가 포커스 트리 예제
+# 파일 위치: common/national_focus/파일명.txt
+# =================================================================
 
-    // 트리 구성: 루트 폴더 하나, descriptor.mod 하나
-    const treeEl = document.getElementById('exp-tree');
-    treeEl.innerHTML = '';
-    const fakeNode = { __files__: [{ name: 'descriptor.mod', path: virtualPath }] };
-    renderTree(fakeNode, treeEl, 0);
+focus_tree = {
+\tid = ${name}_focus_tree
+\tcountry = {
+\t\tfactor = 0
+\t\tmodifier = {
+\t\t\tadd = 1
+\t\t\ttag = GER        # 적용할 국가 태그 (GER=독일, SOV=소련, ENG=영국 등)
+\t\t}
+\t}
+
+\tfocus = {
+\t\tid = ${name}_example_focus
+\t\ticon = GFX_focus_generic_military_mission
+\t\tcost = 10
+\t\tx = 0
+\t\ty = 0
+\t\tavailable = { }
+\t\tcompletion_reward = {
+\t\t\tadd_political_power = 50
+\t\t}
+\t}
+}`);
+
+      addFile(name + '/common/ideas/example_ideas.txt',
+`# =================================================================
+# 국가 아이디어 / 국가 정신 예제
+# 파일 위치: common/ideas/파일명.txt
+# =================================================================
+
+ideas = {
+\tcountry = {
+\t\t${name}_example_spirit = {
+\t\t\tpicture = generic_morale_bonus
+\t\t\tallowed = { always = yes }
+\t\t\tallowed_civil_war = { always = yes }
+\t\t\tremoval_cost = -1
+\t\t\tmodifier = {
+\t\t\t\tstability_factor = 0.05
+\t\t\t\twar_support_factor = 0.05
+\t\t\t}
+\t\t}
+\t}
+}`);
+
+      addFile(name + '/common/characters/example_characters.txt',
+`# =================================================================
+# 캐릭터 (지도자 / 장군) 예제
+# 파일 위치: common/characters/파일명.txt
+# =================================================================
+
+characters = {
+\t${name}_example_leader = {
+\t\tname = "${name}_leader_name"
+\t\tportraits = {
+\t\t\tcivilian = {
+\t\t\t\tlarge = "gfx/leaders/example/portrait.dds"
+\t\t\t}
+\t\t}
+\t\tcountry_leader = {
+\t\t\tideology = nationalism
+\t\t\ttraits = { }
+\t\t\texpire = "1965.1.1"
+\t\t}
+\t}
+}`);
+
+      addFile(name + '/events/example_events.txt',
+`# =================================================================
+# 이벤트 예제
+# 파일 위치: events/파일명.txt
+# =================================================================
+
+country_event = {
+\tid = ${name}.1
+\ttitle = ${name}.1.t
+\tdesc = ${name}.1.d
+\tpicture = GFX_report_event_generic_1
+\tis_triggered_only = yes
+
+\toption = {
+\t\tname = ${name}.1.a
+\t\tadd_political_power = 50
+\t}
+
+\toption = {
+\t\tname = ${name}.1.b
+\t\tadd_stability = -0.05
+\t}
+}`);
+
+      addFile(name + '/history/countries/GER - Germany.txt',
+`# =================================================================
+# 국가 역사 파일 예제 (독일 GER)
+# 파일 위치: history/countries/태그 - 국가명.txt
+# =================================================================
+
+set_politics = {
+\truling_party = fascism
+\telections_allowed = no
+}
+
+set_popularities = {
+\tdemocratic = 5
+\tfascism = 80
+\tcommunism = 5
+\tneutrality = 10
+}
+
+# recruit_leader = {
+#     name = "${name}_example_leader"
+#     ideology = fascism_ideology
+#     expire = "1965.1.1"
+# }`);
+
+      addFile(name + '/interface/example.gfx',
+`# =================================================================
+# GFX 스프라이트 정의 예제
+# 파일 위치: interface/파일명.gfx
+# =================================================================
+
+spriteTypes = {
+\tspriteType = {
+\t\tname = "GFX_${name}_example"
+\t\ttexturefile = "gfx/interface/example.dds"
+\t}
+\tspriteType = {
+\t\tname = "GFX_focus_${name}_example_focus"
+\t\ttexturefile = "gfx/interface/focuses/example_focus.dds"
+\t\tnoOfFrames = 2
+\t}
+}`);
+
+      addFile(name + '/localisation/korean/' + name + '_l_korean.yml',
+`# =================================================================
+# 한국어 현지화 파일
+# 파일 위치: localisation/korean/모드명_l_korean.yml
+# ★ 반드시 UTF-8 BOM 으로 저장하세요!
+# =================================================================
+
+l_korean:
+ ${name}_example_focus: "예제 포커스"
+ ${name}_example_focus_desc: "예제 포커스 설명."
+ ${name}.1.t: "예제 이벤트 제목"
+ ${name}.1.d: "예제 이벤트 본문입니다."
+ ${name}.1.a: "확인"
+ ${name}.1.b: "거절"
+ ${name}_example_spirit: "예제 국가 정신"
+ ${name}_example_spirit_desc: "국가에 적용되는 예제 효과입니다."
+ ${name}_leader_name: "예제 지도자"`);
+
+      addFile(name + '/gfx/leaders/.keep', '');
+      addFile(name + '/gfx/interface/focuses/.keep', '');
+
+      document.getElementById('exp-root-name').textContent = '새 모드 (튜토리얼)';
+    } else {
+      document.getElementById('exp-root-name').textContent = '새 모드';
+    }
 
     document.getElementById('exp-title').textContent = name;
-    document.getElementById('exp-root-name').textContent = '새 모드';
+    rebuildTree();
 
     closeModal('modal-create');
     input.value = '';
+    document.getElementById('tutorial-check').checked = false;
     document.getElementById('mod-name-warn').textContent = '';
-
     document.getElementById('explorer').classList.add('show');
     showPanel('empty');
 
-    // descriptor.mod 자동 열기
-    setTimeout(() => openFile(virtualPath, 'descriptor.mod', 'text'), 80);
+    setTimeout(() => openFile(name + '/descriptor.mod', 'descriptor.mod', 'text'), 80);
   }
 
 
@@ -1219,6 +1384,56 @@ supported_version="1.17.3.0"`;
     return sign?-val:val;
   }
 
+
+  // ── 창 닫기 경고 ──
+  // fileMap에 뭔가 있거나 isDirty 상태면 경고
+  window.addEventListener('beforeunload', function(e) {
+    const hasFiles = Object.keys(fileMap).length > 0;
+    if (!hasFiles) return; // 아무것도 안 열었으면 경고 없음
+    e.preventDefault();
+    e.returnValue = '아직 저장하지 않았습니다! 저장하시겠습니까?';
+    return e.returnValue;
+  });
+  // ── 전체 ZIP 다운로드 ──
+  async function downloadAll() {
+    if (Object.keys(fileMap).length === 0) {
+      showToast('다운로드할 파일이 없습니다');
+      return;
+    }
+    showToast('압축 파일 생성 중...');
+    const zip = new JSZip();
+    const rootName = document.getElementById('exp-title').textContent;
+
+    await Promise.all(Object.entries(fileMap).map(([path, file]) => {
+      if (path.split('/').pop() === '.keep') return Promise.resolve();
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => { zip.file(path, e.target.result); resolve(); };
+        reader.readAsArrayBuffer(file);
+      });
+    }));
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = rootName + '.zip';
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    // 안내 표시
+    const notice = document.getElementById('dl-notice');
+    notice.classList.add('show');
+    setTimeout(() => notice.classList.remove('show'), 8000);
+  }
+
 </script>
+  <!-- 다운로드 안내 -->
+  <div class="dl-notice" id="dl-notice">
+    <div class="dl-notice-icon">📦</div>
+    <div class="dl-notice-title">다운로드가 시작됐습니다! 압축 해제 후 아래 경로에 폴더를 넣으세요.</div>
+    <div class="dl-notice-path">Documents\Paradox Interactive\Hearts of Iron IV\mod</div>
+    <div class="dl-notice-close" onclick="document.getElementById('dl-notice').classList.remove('show')">닫기</div>
+  </div>
+
 </body>
 </html>
