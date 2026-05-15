@@ -137,15 +137,7 @@
     /* 토스트 */
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(30,35,46,0.95); border: 1px solid rgba(125,211,252,0.3); color: #7dd3fc; font-size: 0.82rem; padding: 10px 22px; border-radius: 8px; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 999; pointer-events: none; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .dl-notice { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(15,20,30,0.97); border: 1px solid rgba(125,211,252,0.35); border-radius: 14px; padding: 18px 28px; z-index: 1000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; text-align: center; min-width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-    .dl-notice.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-    .dl-notice-icon { font-size: 1.4rem; margin-bottom: 6px; }
-    .dl-notice-title { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 10px; }
-    .dl-notice-path { font-family: "Consolas","Monaco","Courier New",monospace; font-size: 0.8rem; color: #7dd3fc; background: rgba(125,211,252,0.08); border: 1px solid rgba(125,211,252,0.2); border-radius: 8px; padding: 9px 14px; letter-spacing: 0.01em; word-break: break-all; }
-    .dl-notice-close { margin-top: 12px; display: inline-block; font-size: 0.72rem; color: rgba(255,255,255,0.3); cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: color 0.15s; }
-    .dl-notice-close:hover { color: rgba(255,255,255,0.7); }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -172,7 +164,7 @@
       </button>
     </div>
   </div>
-  <footer>© 2025 SOHFJDHS — All rights reserved</footer>
+  <footer style="display:flex;align-items:center;justify-content:center;gap:20px;"><span>© 2025 SOHFJDHS — All rights reserved</span><button onclick="openChangelog()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);font-size:0.7rem;cursor:pointer;padding:4px 12px;border-radius:6px;transition:all 0.2s;font-family:'Noto Sans KR',sans-serif;" onmouseover="this.style.color='rgba(255,255,255,0.85)';this.style.borderColor='rgba(255,255,255,0.35)'" onmouseout="this.style.color='rgba(255,255,255,0.45)';this.style.borderColor='rgba(255,255,255,0.15)'">📋 업데이트 내역</button></footer>
 </div>
 
 <input type="file" id="file-input" webkitdirectory multiple style="display:none" />
@@ -185,10 +177,6 @@
       <div class="exp-title" id="exp-title">mod 폴더</div>
       <div class="exp-root-name" id="exp-root-name"></div>
     </div>
-    <button class="exp-back" onclick="downloadAll()" style="margin-left:auto;background:rgba(125,211,252,0.15);border-color:rgba(125,211,252,0.3);color:#7dd3fc;display:flex;align-items:center;gap:7px;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      전체 다운로드
-    </button>
   </div>
   <div class="exp-body">
     <div class="exp-tree" id="exp-tree"></div>
@@ -265,13 +253,6 @@
       style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:0.92rem;outline:none;margin-bottom:8px;transition:border-color 0.2s;"
       oninput="filterModName(this)" onkeydown="if(event.key==='Enter')createMod()" />
     <div id="mod-name-warn" style="font-size:0.72rem;color:rgba(255,100,100,0.8);min-height:18px;margin-bottom:14px;text-align:left;"></div>
-    <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:rgba(125,211,252,0.06);border:1px solid rgba(125,211,252,0.18);border-radius:12px;padding:14px 16px;margin-bottom:18px;text-align:left;">
-      <input type="checkbox" id="tutorial-check" style="width:18px;height:18px;margin-top:2px;accent-color:#7dd3fc;cursor:pointer;flex-shrink:0;" />
-      <div>
-        <div style="font-size:0.88rem;font-weight:500;color:#7dd3fc;margin-bottom:4px;">📚 튜토리얼 템플릿 포함</div>
-        <div style="font-size:0.74rem;color:rgba(255,255,255,0.4);line-height:1.6;">기본 폴더 구조와 주석이 달린 예제 파일을 함께 생성합니다.<br><span style="color:rgba(255,255,255,0.25);">common/ events/ gfx/ history/ interface/ localisation/</span></div>
-      </div>
-    </label>
     <div style="display:flex;gap:10px;justify-content:center;">
       <button class="modal-close" onclick="closeModal('modal-create')" style="flex:1;">취소</button>
       <button class="modal-close" onclick="createMod()" style="flex:1;background:rgba(125,211,252,0.18);color:#7dd3fc;border-color:rgba(125,211,252,0.25);">만들기</button>
@@ -785,15 +766,7 @@
       return;
     }
 
-    const useTutorial = document.getElementById('tutorial-check').checked;
-
-    function addFile(path, content) {
-      const b = new Blob([content], { type: 'text/plain' });
-      fileMap[path] = new File([b], path.split('/').pop());
-    }
-
-    // ── 항상 생성 ──
-    addFile(name + '/descriptor.mod',
+    const descriptorContent =
 `version="1"
 tags={
 \t""
@@ -805,185 +778,32 @@ tags={
 \t# National Focuses | Sound | Technologies | Translation | Utilities
 }
 name="${name}"
-supported_version="1.17.3.0"`);
+supported_version="1.17.3.0"`;
 
-    // ── 튜토리얼 체크 시에만 생성 ──
-    if (useTutorial) {
-      addFile(name + '/common/national_focus/example_focus.txt',
-`# =================================================================
-# 국가 포커스 트리 예제
-# 파일 위치: common/national_focus/파일명.txt
-# =================================================================
+    // 가상 파일맵에 descriptor.mod 등록
+    const blob = new Blob([descriptorContent], { type: 'text/plain' });
+    const virtualFile = new File([blob], 'descriptor.mod', { type: 'text/plain' });
+    const virtualPath = name + '/descriptor.mod';
+    fileMap[virtualPath] = virtualFile;
 
-focus_tree = {
-\tid = ${name}_focus_tree
-\tcountry = {
-\t\tfactor = 0
-\t\tmodifier = {
-\t\t\tadd = 1
-\t\t\ttag = GER        # 적용할 국가 태그 (GER=독일, SOV=소련, ENG=영국 등)
-\t\t}
-\t}
-
-\tfocus = {
-\t\tid = ${name}_example_focus
-\t\ticon = GFX_focus_generic_military_mission
-\t\tcost = 10
-\t\tx = 0
-\t\ty = 0
-\t\tavailable = { }
-\t\tcompletion_reward = {
-\t\t\tadd_political_power = 50
-\t\t}
-\t}
-}`);
-
-      addFile(name + '/common/ideas/example_ideas.txt',
-`# =================================================================
-# 국가 아이디어 / 국가 정신 예제
-# 파일 위치: common/ideas/파일명.txt
-# =================================================================
-
-ideas = {
-\tcountry = {
-\t\t${name}_example_spirit = {
-\t\t\tpicture = generic_morale_bonus
-\t\t\tallowed = { always = yes }
-\t\t\tallowed_civil_war = { always = yes }
-\t\t\tremoval_cost = -1
-\t\t\tmodifier = {
-\t\t\t\tstability_factor = 0.05
-\t\t\t\twar_support_factor = 0.05
-\t\t\t}
-\t\t}
-\t}
-}`);
-
-      addFile(name + '/common/characters/example_characters.txt',
-`# =================================================================
-# 캐릭터 (지도자 / 장군) 예제
-# 파일 위치: common/characters/파일명.txt
-# =================================================================
-
-characters = {
-\t${name}_example_leader = {
-\t\tname = "${name}_leader_name"
-\t\tportraits = {
-\t\t\tcivilian = {
-\t\t\t\tlarge = "gfx/leaders/example/portrait.dds"
-\t\t\t}
-\t\t}
-\t\tcountry_leader = {
-\t\t\tideology = nationalism
-\t\t\ttraits = { }
-\t\t\texpire = "1965.1.1"
-\t\t}
-\t}
-}`);
-
-      addFile(name + '/events/example_events.txt',
-`# =================================================================
-# 이벤트 예제
-# 파일 위치: events/파일명.txt
-# =================================================================
-
-country_event = {
-\tid = ${name}.1
-\ttitle = ${name}.1.t
-\tdesc = ${name}.1.d
-\tpicture = GFX_report_event_generic_1
-\tis_triggered_only = yes
-
-\toption = {
-\t\tname = ${name}.1.a
-\t\tadd_political_power = 50
-\t}
-
-\toption = {
-\t\tname = ${name}.1.b
-\t\tadd_stability = -0.05
-\t}
-}`);
-
-      addFile(name + '/history/countries/GER - Germany.txt',
-`# =================================================================
-# 국가 역사 파일 예제 (독일 GER)
-# 파일 위치: history/countries/태그 - 국가명.txt
-# =================================================================
-
-set_politics = {
-\truling_party = fascism
-\telections_allowed = no
-}
-
-set_popularities = {
-\tdemocratic = 5
-\tfascism = 80
-\tcommunism = 5
-\tneutrality = 10
-}
-
-# recruit_leader = {
-#     name = "${name}_example_leader"
-#     ideology = fascism_ideology
-#     expire = "1965.1.1"
-# }`);
-
-      addFile(name + '/interface/example.gfx',
-`# =================================================================
-# GFX 스프라이트 정의 예제
-# 파일 위치: interface/파일명.gfx
-# =================================================================
-
-spriteTypes = {
-\tspriteType = {
-\t\tname = "GFX_${name}_example"
-\t\ttexturefile = "gfx/interface/example.dds"
-\t}
-\tspriteType = {
-\t\tname = "GFX_focus_${name}_example_focus"
-\t\ttexturefile = "gfx/interface/focuses/example_focus.dds"
-\t\tnoOfFrames = 2
-\t}
-}`);
-
-      addFile(name + '/localisation/korean/' + name + '_l_korean.yml',
-`# =================================================================
-# 한국어 현지화 파일
-# 파일 위치: localisation/korean/모드명_l_korean.yml
-# ★ 반드시 UTF-8 BOM 으로 저장하세요!
-# =================================================================
-
-l_korean:
- ${name}_example_focus: "예제 포커스"
- ${name}_example_focus_desc: "예제 포커스 설명."
- ${name}.1.t: "예제 이벤트 제목"
- ${name}.1.d: "예제 이벤트 본문입니다."
- ${name}.1.a: "확인"
- ${name}.1.b: "거절"
- ${name}_example_spirit: "예제 국가 정신"
- ${name}_example_spirit_desc: "국가에 적용되는 예제 효과입니다."
- ${name}_leader_name: "예제 지도자"`);
-
-      addFile(name + '/gfx/leaders/.keep', '');
-      addFile(name + '/gfx/interface/focuses/.keep', '');
-
-      document.getElementById('exp-root-name').textContent = '새 모드 (튜토리얼)';
-    } else {
-      document.getElementById('exp-root-name').textContent = '새 모드';
-    }
+    // 트리 구성: 루트 폴더 하나, descriptor.mod 하나
+    const treeEl = document.getElementById('exp-tree');
+    treeEl.innerHTML = '';
+    const fakeNode = { __files__: [{ name: 'descriptor.mod', path: virtualPath }] };
+    renderTree(fakeNode, treeEl, 0);
 
     document.getElementById('exp-title').textContent = name;
-    rebuildTree();
+    document.getElementById('exp-root-name').textContent = '새 모드';
 
     closeModal('modal-create');
     input.value = '';
-    document.getElementById('tutorial-check').checked = false;
     document.getElementById('mod-name-warn').textContent = '';
+
     document.getElementById('explorer').classList.add('show');
     showPanel('empty');
 
-    setTimeout(() => openFile(name + '/descriptor.mod', 'descriptor.mod', 'text'), 80);
+    // descriptor.mod 자동 열기
+    setTimeout(() => openFile(virtualPath, 'descriptor.mod', 'text'), 80);
   }
 
 
@@ -1394,46 +1214,60 @@ l_korean:
     e.returnValue = '아직 저장하지 않았습니다! 저장하시겠습니까?';
     return e.returnValue;
   });
-  // ── 전체 ZIP 다운로드 ──
-  async function downloadAll() {
-    if (Object.keys(fileMap).length === 0) {
-      showToast('다운로드할 파일이 없습니다');
-      return;
-    }
-    showToast('압축 파일 생성 중...');
-    const zip = new JSZip();
-    const rootName = document.getElementById('exp-title').textContent;
+  // ── 업데이트 내역 ──
+  function openChangelog() {
+    openModal('changelog');
+    const bodyEl = document.getElementById('changelog-body');
+    const verEl  = document.getElementById('changelog-ver');
 
-    await Promise.all(Object.entries(fileMap).map(([path, file]) => {
-      if (path.split('/').pop() === '.keep') return Promise.resolve();
-      return new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => { zip.file(path, e.target.result); resolve(); };
-        reader.readAsArrayBuffer(file);
+    fetch('changelog.txt?t=' + Date.now())
+      .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+      .then(text => {
+        const lines = text.trim().split('\n');
+        // 첫 줄 = 최신 버전명
+        verEl.textContent = lines[0] ? lines[0].trim() : '업데이트 내역';
+
+        let html = '';
+        lines.forEach((line, i) => {
+          const t = line.trim();
+          if (!t) { html += '<div style="height:6px"></div>'; return; }
+          if (i === 0) return; // 첫줄은 제목으로 이미 사용
+          // v 로 시작하는 버전 헤더
+          if (/^v\d/.test(t)) {
+            html += '<div style="margin-top:18px;margin-bottom:6px;font-family:\'Syne\',sans-serif;font-weight:700;font-size:0.9rem;color:#7dd3fc;border-bottom:1px solid rgba(125,211,252,0.2);padding-bottom:5px;">' + t + '</div>';
+          } else if (t.startsWith('-')) {
+            html += '<div style="padding-left:14px;color:rgba(255,255,255,0.72);">' + t + '</div>';
+          } else {
+            html += '<div style="color:rgba(255,255,255,0.4);font-size:0.77rem;margin-top:2px;">' + t + '</div>';
+          }
+        });
+        bodyEl.innerHTML = html || '<div style="color:rgba(255,255,255,0.3);text-align:center;">내용이 없습니다.</div>';
+      })
+      .catch(() => {
+        verEl.textContent = '업데이트 내역';
+        bodyEl.innerHTML = '<div style="color:rgba(255,100,100,0.6);text-align:center;padding:24px;line-height:1.8;">'
+          + '⚠️ changelog.txt 를 불러올 수 없습니다<br>'
+          + '<span style="font-size:0.75rem;color:rgba(255,255,255,0.3);">index.html 과 같은 폴더에 changelog.txt 가 있는지 확인하세요</span>'
+          + '</div>';
       });
-    }));
-
-    const blob = await zip.generateAsync({ type: 'blob' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = rootName + '.zip';
-    a.click();
-    URL.revokeObjectURL(a.href);
-
-    // 안내 표시
-    const notice = document.getElementById('dl-notice');
-    notice.classList.add('show');
-    setTimeout(() => notice.classList.remove('show'), 8000);
   }
 
 </script>
-  <!-- 다운로드 안내 -->
-  <div class="dl-notice" id="dl-notice">
-    <div class="dl-notice-icon">📦</div>
-    <div class="dl-notice-title">다운로드가 시작됐습니다! 압축 해제 후 아래 경로에 폴더를 넣으세요.</div>
-    <div class="dl-notice-path">Documents\Paradox Interactive\Hearts of Iron IV\mod</div>
-    <div class="dl-notice-close" onclick="document.getElementById('dl-notice').classList.remove('show')">닫기</div>
+<!-- 업데이트 내역 모달 -->
+<div class="modal-overlay" id="modal-changelog" onclick="closeOnOverlay(event,'modal-changelog')">
+  <div class="modal" style="max-width:540px;max-height:78vh;display:flex;flex-direction:column;padding:28px 32px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-shrink:0;">
+      <div>
+        <div style="font-size:1.3rem;margin-bottom:6px;">📋</div>
+        <h2 id="changelog-ver" style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;margin:0;">업데이트 내역</h2>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-changelog')" style="padding:6px 14px;font-size:0.78rem;">닫기</button>
+    </div>
+    <div id="changelog-body" style="overflow-y:auto;flex:1;text-align:left;font-size:0.84rem;line-height:1.8;color:rgba(255,255,255,0.65);padding-right:6px;">
+      <div style="color:rgba(255,255,255,0.3);text-align:center;padding:24px;">불러오는 중...</div>
+    </div>
   </div>
+</div>
 
 </body>
 </html>
